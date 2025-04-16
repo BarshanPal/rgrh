@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Birthday Cake with Fireworks</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: url('https://i.imgur.com/dYcYQ7E.jpg') no-repeat center center fixed;
+      background-size: cover;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .cake-container {
+      position: relative;
+      text-align: center;
+      backdrop-filter: blur(6px);
+      background-color: rgba(255, 255, 255, 0.3);
+      padding: 20px;
+      border-radius: 16px;
+      z-index: 2;
+      max-width: 300px;
+      margin: 100px auto;
+    }
+
+    .cake {
+      position: relative;
+      width: 200px;
+      height: 140px;
+      background: #d2691e;
+      border-radius: 0 0 25px 25px;
+      box-shadow: 0 8px #a0522d;
+      margin: 0 auto;
+    }
+
+    .layer-top {
+      position: absolute;
+      top: -30px;
+      left: 0;
+      width: 100%;
+      height: 30px;
+      background: #fff5e6;
+      border-radius: 20px 20px 0 0;
+      box-shadow: inset 0 -4px #f7c59f;
+    }
+
+    .icing-drip {
+      position: absolute;
+      top: -10px;
+      width: 100%;
+      height: 20px;
+      background: #fff5e6;
+      border-radius: 50%;
+      z-index: 1;
+    }
+
+    .candle {
+      position: absolute;
+      top: -80px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 12px;
+      height: 50px;
+      background: repeating-linear-gradient(
+        45deg,
+        #ff5e57,
+        #ff5e57 6px,
+        #ffffff 6px,
+        #ffffff 12px
+      );
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 2;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .flame {
+      position: absolute;
+      top: -25px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 20px;
+      height: 28px;
+      background: radial-gradient(circle, #ff0 30%, #ff4500 70%);
+      border-radius: 50%;
+      animation: flicker 0.3s infinite alternate;
+      z-index: 3;
+    }
+
+    @keyframes flicker {
+      0% {
+        transform: translateX(-50%) scale(1);
+        opacity: 1;
+      }
+      100% {
+        transform: translateX(-50%) scale(1.1);
+        opacity: 0.85;
+      }
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .message {
+      margin-top: 20px;
+      font-size: 1.4rem;
+      color: #b22222;
+      font-weight: bold;
+      text-shadow: 1px 1px 2px #fff;
+      opacity: 0;
+      transition: opacity 0.6s ease-in-out;
+    }
+
+    .message.show {
+      opacity: 1;
+    }
+
+    .balloon {
+      position: absolute;
+      bottom: -150px;
+      width: 60px;
+      height: 80px;
+      background-color: red;
+      border-radius: 50% 50% 45% 45%;
+      animation: floatUp linear infinite;
+      z-index: 0;
+    }
+
+    .balloon::before {
+      content: '';
+      position: absolute;
+      bottom: -20px;
+      left: 50%;
+      width: 2px;
+      height: 20px;
+      background: #555;
+      transform: translateX(-50%);
+    }
+
+    @keyframes floatUp {
+      0% {
+        transform: translateY(0) rotate(0deg);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(-120vh) rotate(360deg);
+        opacity: 0;
+      }
+    }
+
+    .confetti {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background-color: red;
+      animation: fall linear forwards;
+      opacity: 0.8;
+      z-index: 3;
+    }
+
+    @keyframes fall {
+      0% {
+        transform: translateY(0) rotate(0deg);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(100vh) rotate(720deg);
+        opacity: 0;
+      }
+    }
+
+    .firework {
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      background-color: white;
+      border-radius: 50%;
+      opacity: 0.9;
+      animation: explode 1s ease-out forwards;
+      z-index: 4;
+    }
+
+    @keyframes explode {
+      0% {
+        transform: scale(1);
+        opacity: 1;
+      }
+      100% {
+        transform: translate(var(--x), var(--y)) scale(0.2);
+        opacity: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="cake-container">
+  <div class="cake">
+    <div class="layer-top"></div>
+    <div class="icing-drip"></div>
+    <div class="candle" onclick="blowCandle()">
+      <div class="flame" id="flame"></div>
+    </div>
+  </div>
+  <div class="message" id="message">🎉 Happy Birthday! 🎂</div>
+</div>
+
+<script>
+  let candleClicked = false;
+
+  function blowCandle() {
+    if (!candleClicked) {
+      document.getElementById("flame").classList.add("hidden");
+      document.getElementById("message").classList.add("show");
+      candleClicked = true;
+      startCelebrationEffects();
+    }
+  }
+
+  function random(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+
+  function createBalloon() {
+    const balloon = document.createElement("div");
+    balloon.className = "balloon";
+    const colors = ["#FF5E57", "#FFBE0B", "#3A86FF", "#8338EC", "#FB5607", "#00C896"];
+    balloon.style.left = `${random(0, 100)}vw`;
+    balloon.style.backgroundColor = colors[random(0, colors.length - 1)];
+    balloon.style.animationDuration = `${random(8, 14)}s`;
+    document.body.appendChild(balloon);
+
+    setTimeout(() => {
+      balloon.remove();
+    }, 15000);
+  }
+
+  function launchConfetti() {
+    const colors = ["#FF5E57", "#FFBE0B", "#3A86FF", "#8338EC", "#FB5607", "#00C896"];
+    for (let i = 0; i < 100; i++) {
+      const confetti = document.createElement("div");
+      confetti.className = "confetti";
+      confetti.style.left = `${random(0, 100)}vw`;
+      confetti.style.top = `${random(0, 20)}vh`;
+      confetti.style.backgroundColor = colors[random(0, colors.length - 1)];
+      confetti.style.animationDuration = `${random(2, 5)}s`;
+      confetti.style.transform = `rotate(${random(0, 360)}deg)`;
+      document.body.appendChild(confetti);
+
+      setTimeout(() => {
+        confetti.remove();
+      }, 6000);
+    }
+  }
+
+  function launchFireworks() {
+    const colors = ["#FFD700", "#FF00FF", "#00FFFF", "#FF4500"];
+    for (let i = 0; i < 6; i++) {
+      const x = random(20, 80);
+      const y = random(10, 40);
+      for (let j = 0; j < 20; j++) {
+        const firework = document.createElement("div");
+        firework.className = "firework";
+        const angle = Math.random() * 2 * Math.PI;
+        const radius = random(30, 80);
+        const dx = Math.cos(angle) * radius;
+        const dy = Math.sin(angle) * radius;
+        firework.style.left = `${x}vw`;
+        firework.style.top = `${y}vh`;
+        firework.style.setProperty('--x', `${dx}px`);
+        firework.style.setProperty('--y', `${dy}px`);
+        firework.style.backgroundColor = colors[random(0, colors.length - 1)];
+        document.body.appendChild(firework);
+
+        setTimeout(() => {
+          firework.remove();
+        }, 1000);
+      }
+    }
+  }
+
+  function startCelebrationEffects() {
+    setInterval(createBalloon, 400);
+    setInterval(launchConfetti, 500);
+    setInterval(launchFireworks, 1000);
+  }
+</script>
+
+</body>
+</html>
+
